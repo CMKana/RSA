@@ -1,0 +1,3 @@
+Use UInt128 = up to 3,4028236692×10³⁸
+So - optimal number length is [0 ... 10³⁷] (between 2**126 and 2**127)
+
