@@ -8,7 +8,15 @@
 import Foundation
 
 let limit: UInt128 = UInt128.max
-print(AnyIntToString(limit,false,false))
-print(AnyIntToString(limit,false,true))
-print(AnyIntToString(limit,true,false))
-print(AnyIntToString(limit,true,true))
+
+let p: UInt64
+let q: UInt64
+let n: UInt128
+let fn: UInt128
+
+(p, q) = generatePQ()
+n = UInt128(p) * UInt128(q)
+fn = (UInt128(p) - 1) * (UInt128(q) - 1)
+
+print("P|Q|N|φ(N)|")
+print("\(p)|\(q)|\(n)|\(fn)|")
