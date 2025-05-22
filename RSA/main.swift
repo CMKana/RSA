@@ -22,5 +22,5 @@ printTable(head: ["P", "Q", "n", "ƒ(n)"], content: [UInt128(p), UInt128(q), n, 
 
 let e: UInt128 = generateE(phi: fn)
 
-printTable(head: ["E"], content: [e], leadingZeros: .no, separators: .underscore)
+printTable(head: ["e"], content: [e], leadingZeros: .no, separators: .underscore)
 
