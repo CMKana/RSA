@@ -7,15 +7,29 @@
 
 import Foundation
 
-func AnyIntToString<T: FixedWidthInteger>(_ input: T, _ usingZeros: Bool = false, _ separator: Bool = false) -> String {
+enum LeadingZeros {
+        case yes
+        case no
+}
+
+enum Separators {
+        case underscore
+        case none
+}
+
+func AnyIntToString<T: FixedWidthInteger>(_ input: T, _ leadingZeros: LeadingZeros = .no, _ separators: Separators = .none) -> String {
         var output: String = String(input)
         
-        if usingZeros {
+        switch leadingZeros {
+        case .yes:
                 output = String(output.reversed())
                 output = String(output.padding(toLength: String(type(of: input).max).count, withPad: "0", startingAt: 0).reversed())
+        case .no:
+                break
         }
         
-        if separator {
+        switch separators {
+        case .underscore:
                 var temp: String = ""
                 
                 for (i, c) in output.reversed().enumerated() {
@@ -30,6 +44,8 @@ func AnyIntToString<T: FixedWidthInteger>(_ input: T, _ usingZeros: Bool = false
                 }
                 
                 output = String(temp.reversed())
+        case .none:
+                break
         }
         
         return output
