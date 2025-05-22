@@ -18,4 +18,9 @@ let fn: UInt128
 n = UInt128(p) * UInt128(q)
 fn = (UInt128(p) - 1) * (UInt128(q) - 1)
 
-printTable(head: ["P", "Q", "n", "F(n)"], content: [UInt128(p), UInt128(q), n, fn], leadingZeros: .no, separators: .underscore)
+printTable(head: ["P", "Q", "n", "ƒ(n)"], content: [UInt128(p), UInt128(q), n, fn], leadingZeros: .no, separators: .underscore)
+
+let e: UInt128 = generateE(phi: fn)
+
+printTable(head: ["E"], content: [e], leadingZeros: .no, separators: .underscore)
+
