@@ -51,28 +51,29 @@ func RabinMillerTest<T: FixedWidthInteger>(_ n: T, rounds: Int = 10) -> Bool {
         }
         
         return true
+}
+
+
+func modularMultiply<T: FixedWidthInteger>(_ aInput: T, _ bInput: T, _ mod: T) -> T {
+        var result: T = 0
+        var a = aInput % mod
+        var b = bInput
         
-        func modularMultiply(_ aInput: T, _ bInput: T, _ mod: T) -> T {
-                var result: T = 0
-                var a = aInput % mod
-                var b = bInput
-                
-                while b > 0 {
-                        if b & 1 == 1 {
-                                let (sum, overflow) = result.addingReportingOverflow(a)
-                                if !overflow {
-                                        result = sum % mod
-                                }
+        while b > 0 {
+                if b & 1 == 1 {
+                        let (sum, overflow) = result.addingReportingOverflow(a)
+                        if !overflow {
+                                result = sum % mod
                         }
-                        
-                        let (doubled, overflow2) = a.multipliedReportingOverflow(by: 2)
-                        if !overflow2 {
-                                a = doubled % mod
-                        }
-                        
-                        b >>= 1
                 }
                 
-                return result % mod
+                let (doubled, overflow2) = a.multipliedReportingOverflow(by: 2)
+                if !overflow2 {
+                        a = doubled % mod
+                }
+                
+                b >>= 1
         }
+        
+        return result % mod
 }

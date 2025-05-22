@@ -1,17 +1,17 @@
 //
-//  GenerateE.swift
+//  GenerateD.swift
 //  RSA
 //
 //  Created by Евгений Канашкин on 22.05.2025.
 //
 
-func generateE<T: FixedWidthInteger>(phi: T) -> T {
+func generateD<T: FixedWidthInteger>(phi: T) -> T {
         
-        var e: T
+        var d: T
         repeat {
-                e = T.random(in: 3 ..< phi)
-                e |= 1
-        } while !RabinMillerTest(e) && gcd(e, phi) != 1
+                d = T.random(in: 3 ..< phi)
+                d |= 1
+        } while !RabinMillerTest(d) && gcd(d, phi) != 1
         
-        return e
+        return d
 }
