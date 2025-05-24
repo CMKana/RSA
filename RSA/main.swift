@@ -16,11 +16,9 @@ let pq = p + q
 
 printBigInt(with: ["P", "Q", "P+Q", "1"], using: [p, q, pq, BigInt(1)], as: .both, separator: .space, leadingZeros: .no)
 
-//let n: UInt128
-//let fn: UInt128
-//n = UInt128(p) * UInt128(q)
-//fn = (UInt128(p) - 1) * (UInt128(q) - 1)
-//printTable(head: ["n", "ƒ(n)"], content: [n, fn], leadingZeros: .no, separators: .underscore)
+let n: BigInt = p * q
+let fn: BigInt = (p - BigInt(1)) * (q - BigInt(1))
+printBigInt(with: ["n", "ƒ(n)"], using: [n, fn], as: .both, separator: .space, leadingZeros: .no)
 
 //let d: UInt128
 //let e: UInt128
