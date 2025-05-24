@@ -4,3 +4,7 @@ So - optimal number length is [0 ... 37] (between 2**126 and 2**127)
 Max is UInt128, so p and q is UInt64 = ≤19 number length.
 It's the easiest way but BigNum is doable enough.
 Proceed doing it this way then make BigNum type that conforms to <T>IntegerType with all funcs that will be needed.
+
+Calculating E and D needs more number length so it was clear that task needs the BigNum to complete (using 20-30 long numbers ofc).
+
+Done BigInt with some of the functions... Needs full divMod and full div still (Operators/Arithmetics)

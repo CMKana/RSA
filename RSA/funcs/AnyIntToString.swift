@@ -14,6 +14,7 @@ enum LeadingZeros {
 
 enum Separators {
         case underscore
+        case space
         case none
 }
 
@@ -40,6 +41,21 @@ func AnyIntToString<T: FixedWidthInteger>(_ input: T, _ leadingZeros: LeadingZer
                 }
                 
                 if temp.last == "_" {
+                        temp.removeLast()
+                }
+                
+                output = String(temp.reversed())
+        case .space:
+                var temp: String = ""
+                
+                for (i, c) in output.reversed().enumerated() {
+                        temp += String(c)
+                        if (i + 1) % 3 == 0 {
+                                temp += " "
+                        }
+                }
+                
+                if temp.last == " " {
                         temp.removeLast()
                 }
                 
