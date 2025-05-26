@@ -8,3 +8,5 @@ Proceed doing it this way then make BigNum type that conforms to <T>IntegerType 
 Calculating E and D needs more number length so it was clear that task needs the BigNum to complete (using 20-30 long numbers ofc).
 
 Done BigInt with some of the functions... Needs full divMod and full div still (Operators/Arithmetics)
+
+BigNum is done - proceed with the e and d

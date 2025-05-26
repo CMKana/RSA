@@ -7,63 +7,40 @@
 
 extension BigInt {
         static func + (lhs: BigInt, rhs: BigInt) -> BigInt {
-                
                 if lhs.sign == rhs.sign {
-                        
-                        
-                        var lhs: BigInt = lhs
-                        var rhs: BigInt = rhs
-                        
-                        
-                        var result: BigInt = BigInt()
+                        var lhs = lhs
+                        var rhs = rhs
+                        var result = BigInt()
                         
                         let maxLength = max(lhs.chunks.count, rhs.chunks.count)
-                        let minLength = min(lhs.chunks.count, rhs.chunks.count)
                         
-                        if rhs > lhs { (lhs, rhs) = (rhs, lhs) }
+                        
+                        lhs.chunks += Array(repeating: 0, count: maxLength - lhs.chunks.count)
+                        rhs.chunks += Array(repeating: 0, count: maxLength - rhs.chunks.count)
                         
                         var overflow: UInt64 = 0
-                        
-                        for i in (0 ..< minLength) {
-                                let newChunk: UInt128 = UInt128(lhs.chunks[i]) + UInt128(rhs.chunks[i]) + UInt128(overflow)
-                                overflow = UInt64(newChunk >> 64)
-                                let goodChunk: UInt128 = newChunk - (UInt128(overflow) << 64)
-                                result.chunks.append(UInt64(goodChunk))
+                        for i in 0..<maxLength {
+                                let (sum1, of1) = lhs.chunks[i].addingReportingOverflow(rhs.chunks[i])
+                                let (sum2, of2) = sum1.addingReportingOverflow(overflow)
+                                result.chunks.append(sum2)
+                                overflow = (of1 || of2) ? 1 : 0
                         }
                         
-                        for i in (minLength ..< maxLength) {
-                                
-                                switch (lhs.chunks[i].addingReportingOverflow(overflow)) {
-                                case (let newValue, false):
-                                        result.chunks.append(newValue)
-                                        overflow = 0
-                                case (let newValue, true):
-                                        result.chunks.append(newValue)
-                                        overflow = 1
-                                }
-                        }
-                        
-                        if overflow == 1 {
-                                result.chunks.append(1)
+                        if overflow > 0 {
+                                result.chunks.append(overflow)
                         }
                         
                         result.sign = lhs.sign
-                        
                         return result.trimZeroes()
                 } else {
-                        
                         var result: BigInt
-                        
                         if lhs.sign == .positive {
-                                result = BigInt(lhs.chunks) - BigInt(rhs.chunks).trimZeroes()
-                                return result
+                                result = lhs - rhs
                         } else {
-                                result = (BigInt(rhs.chunks) - BigInt(lhs.chunks)).trimZeroes()
-                                return result
+                                result = rhs - lhs
                         }
-                        
+                        return result.trimZeroes()
                 }
-                
         }
         
         static func - (lhs: BigInt, rhs: BigInt) -> BigInt {
@@ -133,99 +110,151 @@ extension BigInt {
         func divMod(_ divisor: BigInt) -> (quotient: BigInt, remainder: BigInt) {
                 precondition(!divisor.isZero(), "Division by zero")
                 
-                let resultSign: Sign = (self.sign == divisor.sign) ? .positive : .negative
-                let remainderSign: Sign = self.sign
+                let n = self
+                let d = divisor
                 
-                let dividend = self.magnitude()
-                let divisor = divisor.magnitude()
+                let nSign = n.sign
+                let dSign = d.sign
                 
-                if dividend < divisor {
-                        return (BigInt(.positive, [0]), self)
+                var nNorm = n.magnitude
+                var dNorm = d.magnitude
+                
+                let dCount = dNorm.count
+                
+                if dCount == 1 {
+                        // Однословный делитель — быстрая версия
+                        var remainder: UInt64 = 0
+                        var quotientChunks: [UInt64] = []
+                        
+                        for chunk in nNorm.reversed() {
+                                let value = (UInt128(remainder) << 64) | UInt128(chunk)
+                                let q = UInt64(value / UInt128(dNorm[0]))
+                                remainder = UInt64(value % UInt128(dNorm[0]))
+                                quotientChunks.insert(q, at: 0)
+                        }
+                        
+                        let quotient = BigInt(nSign == dSign ? .positive : .negative, quotientChunks).trimZeroes()
+                        let rem = BigInt(nSign, [remainder])
+                        return (quotient, rem)
                 }
                 
-                var quotientChunks: [UInt64] = Array(repeating: 0, count: dividend.chunks.count - divisor.chunks.count + 1)
-                var remainderChunks = dividend.chunks + [0]
+                // Многословное деление (на основе алгоритма Кнута)
+                let shift = dNorm.last!.leadingZeroBitCount
+                let d1 = UInt128(1) << 64
                 
-                let d = divisor.chunks
-                let dCount = d.count
-                let m = quotientChunks.count
+                dNorm = BigInt.shiftLeftChunks(dNorm, by: shift)
+                nNorm = BigInt.shiftLeftChunks(nNorm, by: shift)
                 
-                let shift = d.last!.leadingZeroBitCount
-                let normDivisor = divisor << shift
-                let normRemainder = BigInt(.positive, remainderChunks) << shift
-                remainderChunks = normRemainder.chunks + [0]
+                var remainderChunks = nNorm
+                remainderChunks.append(0) // место под остаток
                 
-                let dNorm = normDivisor.chunks
+                let m = remainderChunks.count - dNorm.count
+                var quotientChunks = [UInt64](repeating: 0, count: m)
                 
-                for j in stride(from: m - 1, through: 0, by: -1) {
-                        let top2 = UInt128(remainderChunks[j + dCount]) << 64 | UInt128(remainderChunks[j + dCount - 1])
-                        let d1 = UInt128(dNorm[dCount - 1])
+                for j in (0..<m).reversed() {
+                        let rHi = UInt128(remainderChunks[j + dCount])
+                        let rLo = UInt128(remainderChunks[j + dCount - 1])
+                        var rHat = (rHi << 64) | rLo
                         
-                        var qHat = top2 / d1
+                        let dHi = UInt128(dNorm[dCount - 1])
+                        var qHat = rHat / dHi
+                        rHat %= dHi
+                        
                         if qHat > UInt128(UInt64.max) { qHat = UInt128(UInt64.max) }
-                        var rHat = top2 % d1
                         
-                        // MARK: - переполнение \/
-                        while qHat * UInt128(dNorm[dCount - 2]) > (rHat << 64) + UInt128(remainderChunks[j + dCount - 2]) {
-                                qHat -= 1
-                                rHat += d1
-                                if rHat >= (1 << 64) { break }
-                        }
-                        
-                        var borrow: UInt64 = 0
-                        var carry: UInt64 = 0
-                        for i in 0..<dCount {
-                                let prod = UInt128(UInt64(qHat)) * UInt128(dNorm[i]) + UInt128(carry)
-                                let pLow = UInt64(prod & 0xFFFFFFFFFFFFFFFF)
-                                carry = UInt64(prod >> 64)
-                                
-                                let subtrahend = UInt128(pLow) + UInt128(borrow)
-                                var chunk = UInt128(remainderChunks[j + i])
-                                
-                                if chunk >= subtrahend {
-                                        chunk -= subtrahend
-                                        borrow = 0
-                                } else {
-                                        chunk += UInt128(1) << 64
-                                        chunk -= subtrahend
-                                        borrow = 1
+                        if dCount >= 2 && (j + dCount - 2) < remainderChunks.count {
+                                while qHat * UInt128(dNorm[dCount - 2]) > (rHat << 64) + UInt128(remainderChunks[j + dCount - 2]) {
+                                        qHat -= 1
+                                        rHat += dHi
+                                        if rHat >= d1 { break }
                                 }
-                                
-                                remainderChunks[j + i] = UInt64(chunk)
                         }
                         
-                        let finalChunk = UInt128(remainderChunks[j + dCount])
-                        let finalSub = UInt128(carry) + UInt128(borrow)
-                        if finalChunk >= finalSub {
-                                remainderChunks[j + dCount] = UInt64(finalChunk - finalSub)
-                                quotientChunks[j] = UInt64(qHat)
-                        } else {
-                                quotientChunks[j] = UInt64(qHat) - 1
+                        // Умножение делителя на qHat и вычитание
+                        var borrow: UInt128 = 0
+                        var carry: UInt128 = 0
+                        
+                        for i in 0..<dCount {
+                                let p = UInt128(dNorm[i]) * qHat + carry
+                                carry = p >> 64
+                                let pLow = UInt64(p & 0xFFFFFFFFFFFFFFFF)
                                 
+                                let lhs = UInt128(remainderChunks[j + i])
+                                let sub = lhs &- UInt128(pLow) &- borrow
+                                
+                                remainderChunks[j + i] = UInt64(sub & 0xFFFFFFFFFFFFFFFF)
+                                borrow = (sub > lhs) ? 1 : 0
+                        }
+                        
+                        let lhs = UInt128(remainderChunks[j + dCount])
+                        let sub = lhs &- carry &- borrow
+                        remainderChunks[j + dCount] = UInt64(sub & 0xFFFFFFFFFFFFFFFF)
+                        let needsCorrection = (sub > lhs)
+                        
+                        if needsCorrection {
+                                qHat -= 1
                                 var carry: UInt64 = 0
                                 for i in 0..<dCount {
-                                        let sum = UInt128(remainderChunks[j + i]) + UInt128(dNorm[i]) + UInt128(carry)
-                                        remainderChunks[j + i] = UInt64(sum & 0xFFFFFFFFFFFFFFFF)
-                                        carry = UInt64(sum >> 64)
+                                        let (sum, overflow) = remainderChunks[j + i].addingReportingOverflow(dNorm[i])
+                                        let (sum2, carryOverflow) = sum.addingReportingOverflow(carry)
+                                        remainderChunks[j + i] = sum2
+                                        carry = (overflow || carryOverflow) ? 1 : 0
                                 }
-                                remainderChunks[j + dCount] += carry
+                                var index = j + dCount
+                                let (sum, overflow) = remainderChunks[index].addingReportingOverflow(carry)
+                                remainderChunks[index] = sum
+                                if overflow {
+                                        index += 1
+                                        while index < remainderChunks.count {
+                                                let (newSum, newOverflow) = remainderChunks[index].addingReportingOverflow(1)
+                                                remainderChunks[index] = newSum
+                                                if !newOverflow { break }
+                                                index += 1
+                                        }
+                                        if index == remainderChunks.count {
+                                                remainderChunks.append(1)
+                                        }
+                                }
                         }
+                        
+                        quotientChunks[j] = UInt64(qHat)
                 }
                 
-                let rawQuotient = BigInt(resultSign, quotientChunks).trimZeroes()
-                let rawRemainder = (BigInt(.positive, Array(remainderChunks.prefix(dCount))) >> shift).withSign(remainderSign).trimZeroes()
+                let quotient = BigInt(nSign == dSign ? .positive : .negative, quotientChunks).trimZeroes()
+                let remainderMag = BigInt.shiftRightChunks(remainderChunks.prefix(dCount), by: shift)
+                let remainder = BigInt(nSign, Array(remainderMag)).trimZeroes()
                 
-                return (rawQuotient, rawRemainder)
+                return (quotient, remainder)
         }
         
-        private func magnitude() -> BigInt {
-                return BigInt(.positive, self.chunks)
+        // Вспомогательные функции для сдвигов
+        static func shiftLeftChunks(_ chunks: [UInt64], by bits: Int) -> [UInt64] {
+                guard bits > 0 else { return chunks }
+                var result: [UInt64] = []
+                var carry: UInt64 = 0
+                for word in chunks {
+                        let shifted = (UInt128(word) << bits) | UInt128(carry)
+                        result.append(UInt64(shifted & 0xFFFFFFFFFFFFFFFF))
+                        carry = UInt64(shifted >> 64)
+                }
+                if carry > 0 { result.append(carry) }
+                return result
         }
         
-        private func withSign(_ sign: Sign) -> BigInt {
-                var copy = self
-                copy.sign = self.isZero() ? .positive : sign
-                return copy
+        static func shiftRightChunks(_ chunks: ArraySlice<UInt64>, by bits: Int) -> [UInt64] {
+                guard bits > 0 else { return Array(chunks) }
+                var result: [UInt64] = []
+                var carry: UInt64 = 0
+                for word in chunks.reversed() {
+                        let shifted = (UInt128(word) | (UInt128(carry) << 64)) >> bits
+                        result.insert(UInt64(shifted & 0xFFFFFFFFFFFFFFFF), at: 0)
+                        carry = word
+                }
+                return result
+        }
+        
+        private var magnitude: [UInt64] {
+                return self.chunks
         }
 }
 

@@ -41,4 +41,50 @@ struct BigInt {
                 self.sign = .positive
                 self.chunks = [chunk]
         }
+        
+}
+
+extension BigInt {
+        init?(hex string: String) {
+                var s = string.trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                var sign: Sign = .positive
+                if s.hasPrefix("-") {
+                        sign = .negative
+                        s.removeFirst()
+                } else if s.hasPrefix("+") {
+                        s.removeFirst()
+                }
+                
+                if s.lowercased().hasPrefix("0x") {
+                        s = String(s.dropFirst(2))
+                }
+                
+                s = s.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "_", with: "")
+                
+                guard s.allSatisfy({ $0.isHexDigit }) else {
+                        return nil
+                }
+                
+                guard !s.isEmpty else {
+                        self.init()
+                        return
+                }
+                
+                var chunks: [UInt64] = []
+                var current = s
+                
+                while !current.isEmpty {
+                        let endIndex = current.index(current.endIndex, offsetBy: -min(16, current.count))
+                        let chunkStr = String(current[endIndex..<current.endIndex])
+                        current = String(current[..<endIndex])
+                        
+                        guard let chunk = UInt64(chunkStr, radix: 16) else {
+                                return nil
+                        }
+                        chunks.append(chunk)
+                }
+                
+                self.init(sign, chunks)
+        }
 }

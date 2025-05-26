@@ -23,7 +23,7 @@ extension BigInt {
                 let leadingZeros = last.leadingZeroBitCount
                 return lastIndex * 64 + (64 - leadingZeros)
         }
-
+        
         func isZero() -> Bool {
                 return chunks.allSatisfy { $0 == 0 }
         }
