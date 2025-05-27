@@ -43,3 +43,24 @@ func printTable<T: FixedWidthInteger>(head: [String], content: [T], leadingZeros
         }
         print(tableSeparator)
 }
+
+func printTable(head: String, content: [String]) -> Void {
+        
+        var maxLength: Int = head.count
+
+        content.forEach { element in maxLength = max(maxLength, element.count) }
+        
+        let tableSeparator: String = String(repeating: "—", count: maxLength) + "+"
+        
+        let headFormatted: String = head.padding(toLength: maxLength, withPad: " ", startingAt: 0) + "|"
+        
+        print(tableSeparator)
+        print(headFormatted)
+        print(tableSeparator)
+        
+        for element in content {
+                print(String(element).padding(toLength: maxLength, withPad: " ", startingAt: 0) + "|")
+        }
+        
+        print(tableSeparator)
+}

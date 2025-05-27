@@ -293,3 +293,24 @@ extension BigInt {
                 return lhs.divMod(rhs).remainder
         }
 }
+
+extension BigInt {
+        func modPow(_ exponent: BigInt, _ modulus: BigInt) -> BigInt {
+                precondition(modulus > BigInt(), "Modulus must be positive")
+                precondition(exponent >= BigInt(), "Exponent must be positive")
+                
+                var result = BigInt(1)
+                var base = self % modulus
+                var exp = exponent
+                
+                while exp > BigInt(0) {
+                        if exp.chunks[0] & 1 == 1 {
+                                result = (result * base) % modulus
+                        }
+                        exp = exp >> 1
+                        base = (base * base) % modulus
+                }
+                
+                return result
+        }
+}
