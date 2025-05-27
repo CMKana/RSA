@@ -5,7 +5,7 @@
 //  Created by Евгений Канашкин on 27.05.2025.
 //
 
-let letterLength = 2
+let letterLength = 32
 
 func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = false) -> (encryptedMessage: [BigInt], key: (BigInt, BigInt)) {
         
@@ -41,39 +41,14 @@ func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = fa
                 printBigInt(with: ["   e", "n", "d", "n"], using: [e.0, e.1, d.0, d.1], as: .both, separator: .space)
                 print()
                 printTable(head: "Message:",
-                           content: [mesToString(m: message, lL: letterLength),
-                                     encToString(m: encodedMessage, lL: letterLength),
-                                     encToString(m: decryptedMessage, lL: letterLength),
-                                     mesToString(m: decode(decryptedMessage, alphabet), lL: letterLength)
+                           content: [messToString(m: message, lL: letterLength),
+                                     codeToString(m: encodedMessage, lL: letterLength),
+                                     crptToString(m: encryptedMessage, lL: letterLength)
+//                                     codeToString(m: decryptedMessage, lL: letterLength),
+//                                     messToString(m: decode(decryptedMessage, alphabet), lL: letterLength)
                                     ])
                 print()
-                for element in encryptedMessage {
-                        print(element.toHexString())
-                }
         }
         
         return (encryptedMessage, (d))
-}
-
-func mesToString(m message: String, lL letterLength: Int) -> String {
-        var output: String = ""
-        
-        for element in message {
-                let elementString: String = String(element)
-                output += elementString.padding(toLength: letterLength + 1, withPad: " ", startingAt: 0).reversed()
-        }
-        
-        return output
-}
- 
-func encToString(m message: [BigInt], lL letterLength: Int) -> String {
-        var output: String = ""
-        
-        for element in message {
-//                let elementString: String = String(AnyIntToString(element.chunks.first!).reversed())
-                let elementString: String = String(String(element.chunks.first!, radix: 16, uppercase: true).reversed())
-                output += elementString.padding(toLength: letterLength, withPad: "0", startingAt: 0).padding(toLength: letterLength + 1, withPad: " ", startingAt: 0).reversed()
-        }
-        
-        return output
 }

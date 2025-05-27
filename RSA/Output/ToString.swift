@@ -48,3 +48,40 @@ extension BigInt {
                 }.joined(separator: "\n")
         }
 }
+
+func messToString(m message: String, lL letterLength: Int) -> String {
+        var output: String = ""
+        
+        for element in message {
+                let elementString: String = String(element)
+                output += elementString.padding(toLength: letterLength + 1, withPad: " ", startingAt: 0).reversed()
+        }
+        
+        return output
+}
+ 
+func codeToString(m message: [BigInt], lL letterLength: Int) -> String {
+        var output: String = ""
+        
+        for element in message {
+//                let elementString: String = String(AnyIntToString(element.chunks.first!).reversed())
+                let elementString: String = String(String(element.chunks.first!, radix: 16, uppercase: true).reversed())
+                output += elementString.padding(toLength: letterLength, withPad: " ", startingAt: 0).padding(toLength: letterLength + 1, withPad: " ", startingAt: 0).reversed()
+        }
+        
+        return output
+}
+
+func crptToString(m message: [BigInt], lL letterLength: Int) -> String {
+        var output: String = ""
+        
+        for element in message {
+                
+                var elementString: String = String(element.toHexString().reversed())
+                elementString.removeLast(2)
+                output += elementString.padding(toLength: letterLength + 1, withPad: " ", startingAt: 0).reversed()
+                
+        }
+        
+        return output
+}

@@ -17,16 +17,4 @@ let alphabet = "�АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНн�
 let message: String = "RSA"
 
 let (encryptedMessage, key): ([BigInt], (BigInt, BigInt)) = RSAFullEncrypt(message, alphabet: alphabet, printDetails: true)
-
-
-
-func fullDecrypt(_ message: [BigInt], key: (BigInt, BigInt), alphabet: String, printDetails: Bool = false) -> String {
-        let decryptedMessage: [BigInt] = decrypt(encryptedMessage, with: key.0, n: key.1)
-        let decodedMessage: String = decode(decryptedMessage, alphabet)
-        
-        if printDetails {
-                
-        }
-        
-        return decodedMessage
-}
+let messageNew: String = fullDecrypt(encryptedMessage, key: key, alphabet: alphabet, printDetails: true)
