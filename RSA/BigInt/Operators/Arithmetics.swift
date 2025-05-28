@@ -314,3 +314,34 @@ extension BigInt {
                 return result
         }
 }
+
+
+extension BigInt {
+        func sqrt() -> BigInt {
+                if self <= BigInt(1) { return self }
+                
+                var low = BigInt(1)
+                var high = self
+                var ans = BigInt(1)
+                
+                while low <= high {
+                        let mid = (low + high) / BigInt(2)
+                        let square = mid * mid
+                        if square == self {
+                                return mid
+                        } else if square < self {
+                                ans = mid
+                                low = mid + BigInt(1)
+                        } else {
+                                high = mid - BigInt(1)
+                        }
+                }
+                
+                return ans
+        }
+        
+        func sqrtIfPerfectSquare() -> BigInt? {
+                let root = self.sqrt()
+                return (root * root == self) ? root : nil
+        }
+}

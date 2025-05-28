@@ -5,9 +5,7 @@
 //  Created by Евгений Канашкин on 27.05.2025.
 //
 
-let letterLength = 32
-
-func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = false) -> (encryptedMessage: [BigInt], key: (BigInt, BigInt)) {
+func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = false) -> (encryptedMessage: [BigInt], encryptKey: (BigInt, BigInt), decryptKey: (BigInt, BigInt)) {
         
         var (p, q): (BigInt, BigInt)
         var (n, fn): (BigInt, BigInt)
@@ -50,5 +48,5 @@ func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = fa
                 print()
         }
         
-        return (encryptedMessage, (d))
+        return (encryptedMessage, e, d)
 }
