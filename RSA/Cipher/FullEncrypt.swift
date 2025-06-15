@@ -42,8 +42,6 @@ func RSAFullEncrypt(_ message: String, alphabet: String, printDetails: Bool = fa
                            content: [messToString(m: message, lL: letterLength),
                                      codeToString(m: encodedMessage, lL: letterLength),
                                      crptToString(m: encryptedMessage, lL: letterLength)
-//                                     codeToString(m: decryptedMessage, lL: letterLength),
-//                                     messToString(m: decode(decryptedMessage, alphabet), lL: letterLength)
                                     ])
                 print()
         }

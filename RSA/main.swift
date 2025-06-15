@@ -12,7 +12,7 @@ let letterLength = 10
 let tP16: UInt64 = 65536
 let tP20: UInt64 = 1048576
 let tP24: UInt64 = 16777216 // 15-45sec
-let tP32: UInt64 = 4294967296
+let tP32: UInt64 = 4294967296 // Too long
 
 let zero: BigInt = BigInt([0])
 let limit: BigInt = BigInt([tP20])
