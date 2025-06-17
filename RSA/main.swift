@@ -15,7 +15,9 @@ let tP24: UInt64 = 16777216 // 15-45sec
 let tP32: UInt64 = 4294967296 // Too long
 
 let zero: BigInt = BigInt([0])
-let limit: BigInt = BigInt([tP20])
+let limit: BigInt = BigInt([UINT64_MAX, UINT64_MAX])
+
+printBigInt(with: ["Лимит"], using: [limit])
 
 let alphabet = "� АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя.,!?()-—:;\"'\\/AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
 
@@ -35,3 +37,19 @@ print(message)
 print(messageNew)
 print(easyHackedMessage)
 print(hardHackedMessage)
+
+/*
+Генерация простых чисел
+
+generatePrimeCandidate(from: BigInt, to: BigInt)
+    Генерирует случайное нечетное число в заданном диапазоне.
+    Используется как кандидат в простые числа.
+ 
+Проверка на простоту
+
+Тест Рабина-Миллера (RabinMillerTest(n: BigInt, k: Int))
+    Вероятностный тест простоты.
+    Представляет число как n - 1 = 2^r * d, проверяет условия на a^d mod n.
+    При достаточном числе раундов k даёт очень высокую вероятность простоты.
+    Используется при генерации p и q.
+*/
